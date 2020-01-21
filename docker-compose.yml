@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  db:
+    image: stain/jena-fuseki
+    ports:
+      - "3030:3030"
+    volumes:
+      - ./input/:/staging
+      - ./db/fuseki:/fuseki
+    environment: 
+      - JVM_ARGS=-Xmx5024M
+
+  web:
+    build:
+      context: ./web/
+      dockerfile: Dockerfile
+    volumes:
+      - ./web/app/:/app/
+      - /app/node_modules
+    ports:
+      - '8080:8080'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
