@@ -29,8 +29,7 @@ docker-compose exec db bash /fuseki/populate_db.sh
 
 
 ### Manually
-On some distibutions (eg. Fedora), loading of **DBTropes** data will fail due to the limited memory of docker containers.
-Iin that case input files
+On some distibutions (eg. Fedora), loading of **DBTropes** data will fail due to the limited memory of docker containers. In that case input files
 should be downloaded manually from:
     http://dbtropes.org/static/dbtropes.zip and
     https://query.data.world/s/n5acuyvz4gmvjguqidnz6jjuhjewdn  
