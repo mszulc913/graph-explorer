@@ -3,43 +3,40 @@
     <b-row>
       <b-col class="menu-left mt-4" cols="3">
           <b-row>
-            <b-card>
+            <b-card class="text-center mb-2">
               <b-row>
                 <b-col>
-                  <div v-if="selectedNode" class="text-center">
+                  <div v-if="selectedNode && selectedNode.entityType" class="text-center">
                     <b-checkbox
                       v-model="executeForType"
                       v-if="selectedNode.entityType"
-                    >Fetch properties for entity type {{ selectedNode.entityType.value }}</b-checkbox> <br>
-                    Properties:
-                    <ul>
-                      <li style="list-style: none;" v-for="(property, key) in selectedNode.data.cached_properties" v-bind:key="key">
-                        <b-button
-                          class="btn-sm mt-1"
-                          variant='success'
-                          @click="addConnectedNodesByProperty(selectedNode, property)"
-                        >{{ property.predicate.value }}</b-button>
-                      </li>
-                    </ul>
+                    >Execute for all of the entities from the type <b>{{ selectedNode.entityType.value }}</b></b-checkbox>
                   </div>
-                  <div v-else>
-                    <h5 class="text-center" >No node selected</h5>
-                  </div>
+                  <div v-else><h5>No type availiable</h5></div>
                 </b-col>
               </b-row>
-              <b-row class="text-center mt-2">
-                <b-col>
-                  <b-button variant='danger' :disabled="!selectedNode" @click="deleteNodes(selectedNode.id)">
-                    <span v-if="!loading">
-                      <span v-if="executeForType && selectedNode.entityType">Delete all nodes with the same type as node selected</span>
-                      <span v-else>Delete selected node</span>
-                    </span>
-                    <span v-else>
-                      <b-spinner label="Spinning"></b-spinner>
-                    </span>
-                  </b-button>
-                </b-col>
-              </b-row>
+            </b-card>
+          </b-row>
+          <b-row>
+            <b-card no-body style="max-width: 20rem;" class="mb-5">
+              <template v-slot:header>
+                <h5 class="mb-0 text-center">Add nodes by property</h5>
+              </template>
+              <div v-if="selectedNode">
+                <div v-if="selectedNode.data.cached_properties">
+                  <b-list-group class="text-center" flush>
+                    <b-list-group-item v-for="(property, key) in selectedNode.data.cached_properties" v-bind:key="key"
+                    @click="loading ? null : addConnectedNodesByProperty(selectedNode, property)"
+                    class="bg-light"
+                    :style="{cursor: loading ? '' : 'pointer'}"
+                    >
+                    <b>{{ formatLabel(property.predicate.value) }}
+                    </b></b-list-group-item>
+                  </b-list-group>
+                </div>
+                <b-card-body v-else><h5 class="text-center" >No properties found</h5></b-card-body>
+              </div>
+              <b-card-body v-else><h5 class="text-center">No node selected</h5></b-card-body>
             </b-card>
           </b-row>
         </b-col>
@@ -65,25 +62,29 @@
           </b-row>
           <b-row class="text-center mt-2">
             <b-col>
+              <b-card>
               <b-row>
                 <b-col>
-                  <b-button class="mr-2" @click="exportGraph()">
+                  <b-button class="mr-2 bg-light text-dark" @click="exportGraph()">
                     Export graph
                   </b-button>
                 </b-col>
                 <b-col>
                   <b-row>
                     <b-col>
-                      <h3>Import graph</h3>
-                    </b-col>
-                  </b-row>
-                  <b-row>
-                    <b-col>
-                      <input class="mt-2 mb-6" type="file" ref="fileUpload" @change="importGraph()">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="inputGroupFile01" ref="fileUpload" @change="importGraph()"
+                          aria-describedby="inputGroupFileAddon01">
+                        <label class="custom-file-label text-left" for="inputGroupFile01">Import graph</label>
+                      </div>
                     </b-col>
                   </b-row>
                 </b-col>
               </b-row>
+
+
+
+              </b-card>
             </b-col>
           </b-row>
         </b-col>
@@ -112,7 +113,7 @@
                 <b-col class="mt-2">
                   <b-button
                     :disabled="activeDB == 'linkedmdb'"
-                    @click="renderGraph = false; activeDB = 'linkedmdb'; resetGraph()"
+                    @click="renderGraph = false; activeDB = 'linkedmdb'; resetGraph(); selectedEntity1 = null; selectedEntity2 = null"
                     :class="getDbSelectionButtonColor('linkedmdb')"
                     >
                     <span v-if="!loading">Linkedmdb</span>
@@ -123,7 +124,7 @@
                   <b-button
                   class="ml-2"
                   :disabled="activeDB == 'dbtropes'"
-                  @click="renderGraph = false; activeDB = 'dbtropes'; resetGraph()"
+                  @click="renderGraph = false; activeDB = 'dbtropes'; resetGraph(); selectedEntity1 = null; selectedEntity2 = null"
                   :class="getDbSelectionButtonColor('dbtropes')"
                   >
                     <span v-if="!loading">DBTropes</span>
@@ -143,14 +144,14 @@
               :disabled="!selectedNode || selectedNode.data.type !== 'uri'"
               @click="selectedEntity1 = selectedNode"
               ><span v-if="selectedEntity1">{{ selectedEntity1.data.value }}</span>
-              <span v-else>Choose curently selected node as first node in path</span>
+              <span v-else>Choose curently selected node as first node in a path</span>
               </b-button>
 
               <b-button class="mt-2"
               :disabled="!selectedNode || selectedNode.data.type !== 'uri'"
               @click="selectedEntity2 = selectedNode"
               ><span v-if="selectedEntity2">{{ selectedEntity2.data.value }}</span>
-              <span v-else>Choose curently selected node as second node in path</span>
+              <span v-else>Choose curently selected node as second node in a path</span>
               </b-button>
               <b-button
               :disabled='!selectedEntity1 || !selectedEntity2 || loading'
@@ -690,5 +691,9 @@ export default {
 .menu-right {
   position: relative;
   left: 20%;
+}
+
+.card {
+  width: 100%
 }
 </style>

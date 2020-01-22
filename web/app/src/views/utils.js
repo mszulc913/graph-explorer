@@ -1,7 +1,11 @@
 function Utils() { }
 
 Utils.formatLabel = function (value, maxLabelLen) {
-    const splitted = value.split("/");
+    var splitted = ""
+    if (value.includes("#"))
+        splitted = value.split("#");
+    else 
+        splitted = value.split("/");
 
     if (splitted[splitted.length - 1].length > maxLabelLen)
         return splitted[splitted.length - 1].slice(0, maxLabelLen) + "...";

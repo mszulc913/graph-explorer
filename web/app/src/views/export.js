@@ -1,3 +1,5 @@
+const N3 = require('n3');
+
 class GraphToNTExporter {
 
     constructor(nodesDataSet, edgesDataSet) {
@@ -6,35 +8,36 @@ class GraphToNTExporter {
       }
 
     export(){
-        let outputString = ""
-        let outputStatements = []
-        this.edgesDataSet.forEach(edge => {
-            let fromString = this._getOutputLabel(this.nodesDataSet._data[edge.from])
-            let toString = this._getOutputLabel(this.nodesDataSet._data[edge.to])
 
-            outputStatements.push({
-                from: fromString,
-                to: toString,
-                property: `<${edge.data.value}>`
-            })
+
+        const writer = new N3.Writer({ format: 'N-Triples' });
+
+
+        this.edgesDataSet.forEach(edge => {
+            let obj = this._getOutput(this.nodesDataSet._data[edge.from])
+            let subj = this._getOutput(this.nodesDataSet._data[edge.to])
+            let pred = N3.DataFactory.namedNode(edge.data.value)
+            writer.addQuad(obj, pred, subj)
         })
-        outputString = outputStatements.map(x => {
-            return `${x.from} ${x.property} ${x.to}`
-        }).join(' . \n')
-        return outputString + '.'
+
+        let output = null
+
+        writer.end((error, result) => output = result)
+
+        return output
     }
 
-    _getOutputLabel(node){
+    _getOutput(node){
         if (node.data.type === 'uri'){
-            return `<${node.data.value}>`
+            return N3.DataFactory.namedNode(node.data.value)
         } else {
             if (node.data.datatype){
-                return `"${node.data.value}"^^<${node.data.datatype}>` 
+                return N3.DataFactory.literal(node.data.value, N3.DataFactory.namedNode(node.data.datatype))
             } else {
                 if (node.data['"xml:lang"'])
-                    return `"${node.data.value}"@${node.data['"xml:lang"']}`
+                    return N3.DataFactory.literal(node.data.value, node.data['"xml:lang"'])
                 else
-                    return `"${node.data.value}"`
+                    return N3.DataFactory.literal(node.data.value)
             }
         }
     }
