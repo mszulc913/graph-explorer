@@ -15,6 +15,19 @@
                   <div v-else><h5>No type availiable</h5></div>
                 </b-col>
               </b-row>
+              <b-row class='mt-3 mb-1 text-center'>
+                <b-col>
+                  <b-button variant='danger' v-if="selectedNode" @click="deleteNodes(selectedNode.id)">
+                    <span v-if="!loading">
+                      <span v-if="executeForType && selectedNode.entityType">Delete all nodes with the same type as node selected</span>
+                      <span v-else>Delete selected node</span>
+                    </span>
+                    <span v-else>
+                      <b-spinner label="Spinning"></b-spinner>
+                    </span>
+                  </b-button>
+                </b-col>
+              </b-row>
             </b-card>
           </b-row>
           <b-row>
@@ -65,7 +78,7 @@
               <b-card>
               <b-row>
                 <b-col>
-                  <b-button class="mr-2 bg-light text-dark" @click="exportGraph()">
+                  <b-button :disabled="nodeValuesSet.size == 0" class="mr-2 bg-light text-dark" @click="exportGraph()">
                     Export graph
                   </b-button>
                 </b-col>
@@ -81,7 +94,6 @@
                   </b-row>
                 </b-col>
               </b-row>
-
 
 
               </b-card>
@@ -244,9 +256,17 @@ export default {
       reader.onload = function() {
         try {
           const importer = new NTToGraphImporter(reader.result)
-          const parsedTriples = importer.import()
+          const parsingResult = importer.import()
 
-          parsedTriples.forEach(triple => {
+          parsingResult.nodes.forEach(node => {
+            // nodes without properties
+            if (!vue.isNodeExists(node)) {
+              vue.addNode(node)
+            }
+          })
+
+          parsingResult.predicates.forEach(triple => {
+            // triples
             if (!vue.isNodeExists(triple.object)) {
               vue.addNode(triple.object)
             }
@@ -353,8 +373,13 @@ export default {
     deleteNode(nodeId){
       var node = this.nodes._data[nodeId]
       node.edges.forEach( edge => {
-        this.edges.remove({id: edge})
+        const edgeSplitted = edge.split('_')
+        const nodeId1 = edgeSplitted[edgeSplitted.length - 2]
+        const nodeId2 = edgeSplitted[edgeSplitted.length - 1]
+        this.nodes._data[nodeId1].edges.delete(edge)
+        this.nodes._data[nodeId2].edges.delete(edge)
         this.edgeSet.delete(edge)
+        this.edges.remove({id: edge})
       })
       this.nodeValuesSet.delete(node.data.value);
       this.nodes.remove({id:nodeId});
