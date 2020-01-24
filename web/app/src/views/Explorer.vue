@@ -189,6 +189,7 @@ import Graph from "../components/Graph.vue";
 import axios from "../axios-sparql.js";
 import vis from "visjs-network";
 import { Utils } from "./utils.js"
+import { Consts } from "./consts.js"
 import { GraphToNTExporter } from "./export.js"
 import { NTToGraphImporter } from "./import.js"
 
@@ -216,6 +217,7 @@ export default {
       selectedEntity1: null,
       selectedEntity2: null,
       loading: false,
+      shortestPathEdges: [],
     };
   },
   components: {
@@ -351,7 +353,7 @@ export default {
       const newId = this.currentNodeId++
       this.nodeValuesSet.add(data.value);
       this.valueNodeIdMap[data.value] = newId;
-      const color = data.type === 'uri' ? '#D2E5FF' : 'white'
+      const color = data.type === 'uri' ? Consts.SECONDARY_COLOR : 'white'
       this.nodes.add({
         id: newId,
         label: this.formatLabel(data.value),
@@ -438,7 +440,7 @@ export default {
       });    
       this.loading = false
     },
-    addEdge(dataSource, dataTarget, property, key, color){
+    addEdge(dataSource, dataTarget, property, key, color, width){
       this.edgeSet.add(key);
       let edge = {
         id: key,
@@ -449,8 +451,11 @@ export default {
       };
       if (color){
         edge.color = {
-          color: 'red'
+          color: color
         }
+      }
+      if (width){
+        edge.width = width
       }
       this.edges.add(edge)
       this.nodes._data[this.valueNodeIdMap[dataSource.value]].edges.add(key)
@@ -657,6 +662,7 @@ export default {
           }
         })
         .catch(error => {
+          console.log(error)
           this.handleErrorNotification(error)
           this.loading = false
         });
@@ -669,16 +675,30 @@ export default {
       axios
         .get(this.activeDB, { params: { query: query } })
         .then(response => {
+            this.clearShortesPathColor()
             Object.keys(response.data.results.bindings[0]).sort().forEach((x, i) => {
               let property = response.data.results.bindings[0][x]
-
-              const edgeKey = `${property.value}_${
-                this.valueNodeIdMap[nodesPath[i].value]
-              }_${this.valueNodeIdMap[nodesPath[i + 1].value]}`;
+              let edgeKey = ''
+              if (x[0] == 'y'){
+                edgeKey = `${property.value}_${
+                  this.valueNodeIdMap[nodesPath[i].value]
+                }_${this.valueNodeIdMap[nodesPath[i + 1].value]}`;
+              } else {
+                edgeKey = `${property.value}_${
+                  this.valueNodeIdMap[nodesPath[i + 1].value]
+                }_${this.valueNodeIdMap[nodesPath[i].value]}`;
+              }
 
               if (!this.edgeSet.has(edgeKey)) {
-                this.addEdge(nodesPath[i], nodesPath[i + 1], property, edgeKey, 'red')
-              }   
+                if (x[0] == 'y'){
+                  this.addEdge(nodesPath[i], nodesPath[i + 1], property, edgeKey, Consts.COLOR1, 3)
+                } else {
+                  this.addEdge(nodesPath[i + 1], nodesPath[i], property, edgeKey, Consts.COLOR1, 3)
+                }
+              } else {
+                this.recolourEdge(edgeKey, Consts.COLOR1, 3)
+              }
+              this.shortestPathEdges.push(edgeKey)
             })
 
           const text = isOnePath ? 'Shortest path found.' : 'More than one shortest paths found. First one fetched.'
@@ -694,6 +714,19 @@ export default {
           this.handleErrorNotification(error)
           this.loading = false
         });
+    },
+    recolourEdge(edgeKey, color, width){
+        let edge = this.edges._data[edgeKey]
+        edge.color = {color: color}
+        edge.width = width
+        this.edges.remove({id: edgeKey})
+        this.edges.add(edge)
+    },
+    clearShortesPathColor(){
+      this.shortestPathEdges.forEach(edge => {
+        this.recolourEdge(edge, Consts.PRIMARY_COLOR, 1)
+      })
+      this.shortestPathEdges = []
     }
   },
 };
