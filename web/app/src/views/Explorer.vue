@@ -337,7 +337,7 @@ export default {
           this.renderGraph = true
           this.$notify({
             group: 'notif',
-            type: "success",
+            type: response.data.results.bindings.length > 0 ? 'success' : '',
             title: 'Success',
             text: `Fetched ${response.data.results.bindings.length} nodes`
           });
@@ -641,6 +641,12 @@ export default {
 
       if (i == SHORTEST_PATH_MAX_LEN){
         this.loading = false
+        this.$notify({ 
+          group: 'notif',
+          type: "warn",
+          title: 'Finished',
+          text: 'No path with length up to 10 found.'
+        });
         return
       }
 

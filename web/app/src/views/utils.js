@@ -79,32 +79,6 @@ Utils.buildFindPathPropertiesQuery = function (nodes) {
 
     return query
 }
-// }
-
-// Utils.buildFindPathPropertiesQuery = function (node1, node2) {
-//     let queryFilterStatements = []
-//     let queryMiddleStatements = []
-//         queryMiddleStatements.push(
-//             `{<${nodes[i].value}> ?y${i} <${nodes[i + 1].value}>}
-//              UNION {<${nodes[i + 1].value}> ?z${i} <${nodes[i].value}>} .`
-//         )
-//         queryFilterStatements.push(
-//             `FILTER(!regex(str(?y${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) .
-//             FILTER(!regex(str(?z${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) .`
-//         )
-//     }
-
-//     const query = `
-//         SELECT DISTINCT *
-//         WHERE {
-//             {<${nodes1.value}> ?y <${nodes2.value}>}
-//              UNION {<${nodes2.value}> ?z${i} <${nodes1.value}>} .
-//             FILTER(!regex(str(?y${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) .
-//             FILTER(!regex(str(?z${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) 
-//         } LIMIT 1`
-
-//     return query
-// }
 
 Utils.getRandomColor = function () {
     let items = [Consts.COLOR1, Consts.COLOR2, Consts.COLOR3]
