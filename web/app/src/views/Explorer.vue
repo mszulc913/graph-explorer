@@ -294,6 +294,7 @@ export default {
           vue.loading = false
 
         } catch (error) {
+          console.log(error)
           vue.$notify({
             group: 'notif',
             type: "error",

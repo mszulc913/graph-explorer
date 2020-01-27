@@ -21,6 +21,8 @@ export class NTToGraphImporter {
 
             if (object.id === '_:x'){
                 nodes.push(subject)
+            } else if (subject.id == '_:x'){
+                nodes.push(object)
             } else {
                 predicates.push(this._parsePredicate(subject, quad.predicate, object))
             }

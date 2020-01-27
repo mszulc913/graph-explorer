@@ -18,10 +18,14 @@ class GraphToNTExporter {
 
         this.nodesDataSet.forEach(node => {
             if (node.edges.size === 0){
-                let obj = N3.DataFactory.blankNode('x')
+                let blank = N3.DataFactory.blankNode('x')
                 let pred = N3.DataFactory.namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
-                let subj = N3.DataFactory.namedNode(node.data.value)
-                writer.addQuad(subj, pred, obj)
+                let obj = this._getOutput(node)
+                if (node.data.type === 'uri'){
+                    writer.addQuad(obj, pred, blank)
+                } else {
+                    writer.addQuad(blank, pred, obj)
+                }
             }
         })
 
