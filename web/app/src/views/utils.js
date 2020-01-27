@@ -1,6 +1,9 @@
 
 import { Consts } from "./consts.js"
 
+const TYPE_URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+
+
 function Utils() { }
 
 Utils.formatLabel = function (value, maxLabelLen) {
@@ -26,7 +29,7 @@ Utils.buildFindPathQuery = function (node1, node2, len) {
         queryFilterStatements.push(`FILTER(!isLiteral(?s${1})) .`)
         for (i; i < len; i++) {
             queryMiddleStatements.push(
-                `?s${i - 1} (!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)|^(!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) ?s${i} .`
+                `?s${i - 1} (!<${TYPE_URI}>)|^(!<${TYPE_URI}>) ?s${i} .`
             )
             queryFilterStatements.push(`FILTER(!isLiteral(?s${i - 1}) ) .`)
         }
@@ -36,9 +39,9 @@ Utils.buildFindPathQuery = function (node1, node2, len) {
             WHERE {
                 BIND(<${node1.data.value}> as ?s0) .
                 BIND(<${node2.data.value}> as ?s${i}) .
-                ?s0 (!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)|^(!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) ?s1 .
+                ?s0 (!<${TYPE_URI}>)|^(!<${TYPE_URI}>) ?s1 .
                 ${queryMiddleStatements.join('\n')}
-                ?s${i - 1} (!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)|^(!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) ?s${len} .
+                ?s${i - 1} (!<${TYPE_URI}>)|^(!<${TYPE_URI}>) ?s${len} .
                 ${queryFilterStatements.join('\n')}
             } LIMIT 2`
 
@@ -49,7 +52,7 @@ Utils.buildFindPathQuery = function (node1, node2, len) {
         WHERE {
             BIND(<${node1.data.value}> as ?s0)
             BIND(<${node2.data.value}> as ?s1)
-            ?s0 (!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>)|^(!<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>) ?s1
+            ?s0 (!<${TYPE_URI}>)|^(!<${TYPE_URI}>) ?s1
         } LIMIT 2`
     }
 
@@ -65,8 +68,8 @@ Utils.buildFindPathPropertiesQuery = function (nodes) {
              UNION {<${nodes[i + 1].value}> ?z${i} <${nodes[i].value}>} .`
         )
         queryFilterStatements.push(
-            `FILTER(!regex(str(?y${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) .
-            FILTER(!regex(str(?z${i}), "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")) .`
+            `FILTER(!regex(str(?y${i}), "${TYPE_URI}")) .
+            FILTER(!regex(str(?z${i}), "${TYPE_URI}")) .`
         )
     }
 
