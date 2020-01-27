@@ -534,6 +534,7 @@ export default {
         });
     },
     selectNode(nodeId) {
+      this.executeForType = false
       if (!nodeId)
         return
       const node = this.nodes._data[nodeId];
@@ -579,6 +580,7 @@ export default {
         return ""
     },
     resetGraph(){
+      this.shortestPathEdges = []
       this.valueNodeIdMap = {}
       this.edgeSet = new Set()
       this.nodeValuesSet = new Set()
@@ -718,6 +720,7 @@ export default {
           this.loading = false
         })
         .catch(error => {
+          console.log(error)
           this.handleErrorNotification(error)
           this.loading = false
         });
