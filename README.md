@@ -1,11 +1,11 @@
 # RDF Graph Explorer
-Simple app that allows to explore *Linkedmdb* and *DBTropes* RDF graphs. Written with Vue.js. Apache Jena Fuseki is used as the permament triple store.  
+Simple app that allows to explore *Linkedmdb* and *DBTropes* RDF graphs. Written with Vue.js. Apache Jena Fuseki is used as a permament triple store.  
 
 ### Requirements
 *docker* with *docker-compose* is required to run the app.
 
 ## Installation
-Note: password for the *Jena Fuseki* admin panel is stored in the *db/fuseki/shiro.ino*, you can change it before
+Note: password for the *Jena Fuseki* admin panel is stored in the *db/fuseki/shiro.ino* file, you can change it before
 building the containers or leave it as it is.  
 
 To build the containers type
